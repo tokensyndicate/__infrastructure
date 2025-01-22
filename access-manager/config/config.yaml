@@ -1,0 +1,15 @@
+server:
+  port: 8080
+  host: "0.0.0.0"
+
+vault:
+  address: "http://localhost:8200"
+  token: "your-vault-token"
+
+redis:
+  address: "localhost:6379"
+  password: ""
+  db: 0
+
+logging:
+  level: "info"

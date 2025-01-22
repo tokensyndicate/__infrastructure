@@ -1,0 +1,87 @@
+version: "3.8"
+
+services:
+  gateway:
+    container_name: gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - backend-network
+    volumes:
+      - ./gateway/conf.d:/etc/nginx/conf.d:ro
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./gateway/jwt_secret.key:/etc/nginx/jwt_secret.key:ro
+
+  order-book-service:
+    container_name: order-book-service
+    build: ./order-book-service
+    environment:
+      - CONFIG_FILE=/app/config/config.yaml
+    volumes:
+      - ./order-book-service/config:/app/config
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - backend-network
+
+  access-manager:
+    container_name: access-manager
+    build:
+      context: ./access-manager
+      dockerfile: Dockerfile
+    environment:
+      - CONFIG_FILE=/app/config/config.yaml
+    volumes:
+      - ./access-manager/config:/app/config
+    depends_on:
+      - vault
+      - redis
+    networks:
+      - backend-network
+
+  vault:
+    image: vault:1.13.3
+    container_name: vault
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_DEV_ROOT_TOKEN_ID=root # Только для разработки!
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./vault/config:/vault/config
+      - ./vault/data:/vault/data
+      - ./vault/logs:/vault/logs
+    command: server
+    networks:
+      - backend-network
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  backend-network:
+    name: backend-network
+    driver: bridge

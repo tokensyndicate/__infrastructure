@@ -1,0 +1,29 @@
+api:
+  port: 8080
+
+exchanges:
+  binance:
+    name: "Binance"
+    enabled: true
+    api_key:
+    api_secret:
+  bybit:
+    name: "Bybit"
+    enabled: false
+    api_key:
+    api_secret:
+
+repository_type: "influx" # or "timescale"
+
+database:
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "postgres"
+  dbname: "orderbook"
+
+influxdb:
+  url: "https://eu-central-1-1.aws.cloud2.influxdata.com"
+  token: "DaCW-cvLtNZ_tRfWwbvfHD3QEryVI9KkmWCdV5WWIK9FA8JUfEOA1kc5ltzfb9Ii36c_W8hOCqda3mgDqq6_6w=="
+  organization: "Team"
+  bucket: "orderbook"
